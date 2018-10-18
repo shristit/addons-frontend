@@ -335,5 +335,6 @@ module.exports = {
   // experiments.
   experiments: {
     home_hero: true,
+    install_button_color: true,
   },
 };

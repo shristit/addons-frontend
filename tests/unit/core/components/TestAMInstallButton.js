@@ -4,11 +4,15 @@ import { TransitionGroup } from 'react-transition-group';
 import createStore from 'amo/store';
 import AMInstallButton, {
   AMInstallButtonBase,
+  EXPERIMENT_CATEGORY,
+  VARIANT_BLUE,
+  VARIANT_GREEN,
 } from 'core/components/AMInstallButton';
 import {
   ADDON_TYPE_EXTENSION,
   ADDON_TYPE_OPENSEARCH,
   ADDON_TYPE_STATIC_THEME,
+  ADDON_TYPE_THEME,
   DISABLED,
   DOWNLOADING,
   ENABLED,
@@ -37,6 +41,7 @@ import {
   fakeTheme,
   createFakeLocation,
   getFakeConfig,
+  getFakeLogger,
   sampleUserAgentParsed,
   shallowUntilTarget,
 } from 'tests/unit/helpers';
@@ -77,10 +82,12 @@ describe(__filename, () => {
     defaultInstallSource: '',
     disabled: false,
     enable: sinon.stub(),
+    experimentEnabled: false,
     hasAddonManager: true,
     i18n: fakeI18n(),
     install: sinon.stub(),
     installTheme: sinon.stub(),
+    isAddonEnabled: sinon.stub(),
     location: createFakeLocation(),
     status: UNINSTALLED,
     store: createStore().store,
@@ -317,7 +324,7 @@ describe(__filename, () => {
   });
 
   it('calls `window.external.AddSearchProvider` to install a search provider', () => {
-    const fakeLog = { info: sinon.stub() };
+    const fakeLog = getFakeLogger();
     const fakeWindow = createFakeMozWindow();
     const installURL = 'https://a.m.o/files/addon.xpi';
 
@@ -629,5 +636,99 @@ describe(__filename, () => {
     const root = renderOpenSearch({ status: UNKNOWN });
 
     expect(root.find(Button)).toHaveProp('disabled', false);
+  });
+
+  describe('install_button_color experiment', () => {
+    const renderWithExperiment = (props = {}) => {
+      return render({
+        experimentEnabled: true,
+        ...props,
+      });
+    };
+
+    it('adds a CSS class name when variant is VARIANT_GREEN', () => {
+      const root = renderWithExperiment({ variant: VARIANT_GREEN });
+
+      expect(root).toHaveClassName('AMInstallButton--green');
+    });
+
+    it('does not add a CSS class name when variant is not VARIANT_GREEN', () => {
+      const root = renderWithExperiment({ variant: VARIANT_BLUE });
+
+      expect(root).not.toHaveClassName('AMInstallButton--green');
+    });
+
+    it.each([
+      ADDON_TYPE_EXTENSION,
+      ADDON_TYPE_OPENSEARCH,
+      ADDON_TYPE_STATIC_THEME,
+      ADDON_TYPE_THEME,
+    ])('sends a tracking event when installing a "%s" add-on', (addonType) => {
+      // Install buttons for opensearch add-ons are not rendered on the server.
+      const _config = getFakeConfig({ server: false });
+      const _tracking = createFakeTracking();
+      const _window = createFakeMozWindow();
+      const addon = createInternalAddon({
+        ...fakeAddon,
+        type: addonType,
+      });
+      const variant = VARIANT_BLUE;
+
+      const root = renderWithExperiment({
+        _config,
+        _tracking,
+        _window,
+        addon,
+        variant,
+      });
+
+      const button = root.find('.AMInstallButton-button');
+      const clickEvent = createFakeEvent();
+      button.simulate('click', clickEvent);
+
+      sinon.assert.calledWith(_tracking.sendEvent, {
+        action: variant,
+        category: EXPERIMENT_CATEGORY,
+      });
+    });
+
+    it.each([
+      ADDON_TYPE_EXTENSION,
+      ADDON_TYPE_OPENSEARCH,
+      ADDON_TYPE_STATIC_THEME,
+      ADDON_TYPE_THEME,
+    ])(
+      'does not send a tracking event when installing a "%s" add-on and experiment is disabled',
+      (addonType) => {
+        // Install buttons for opensearch add-ons are not rendered on the server.
+        const _config = getFakeConfig({ server: false });
+        const _tracking = createFakeTracking();
+        const _window = createFakeMozWindow();
+        const addon = createInternalAddon({
+          ...fakeAddon,
+          type: addonType,
+        });
+        const variant = VARIANT_BLUE;
+
+        const root = renderWithExperiment({
+          _config,
+          _tracking,
+          _window,
+          addon,
+          variant,
+          // Disable the experiment.
+          experimentEnabled: false,
+        });
+
+        const button = root.find('.AMInstallButton-button');
+        const clickEvent = createFakeEvent();
+        button.simulate('click', clickEvent);
+
+        sinon.assert.neverCalledWith(_tracking.sendEvent, {
+          action: variant,
+          category: EXPERIMENT_CATEGORY,
+        });
+      },
+    );
   });
 });
