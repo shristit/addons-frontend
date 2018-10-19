@@ -848,6 +848,19 @@ describe(__filename, () => {
 
       expect(getLoadingForAuthorIds(state, [])).toEqual(null);
     });
+
+    it('returns false when loading is defined', () => {
+      const state = reducer(
+        undefined,
+        loadAddonsByAuthors({
+          ...params,
+          addons: [],
+          count: 0,
+        }),
+      );
+
+      expect(getLoadingForAuthorIds(state, [randomAuthorId1])).toEqual(false);
+    });
   });
 
   describe('getCountForAuthorIds', () => {

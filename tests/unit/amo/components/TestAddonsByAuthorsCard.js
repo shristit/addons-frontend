@@ -251,14 +251,13 @@ describe(__filename, () => {
     expect(root.html()).toBeNull();
   });
 
-  it('should render nothing if add-ons are null', () => {
+  it('should render a loading state on first instantiation', () => {
     const root = render({
-      addons: null,
-      authorIds: ['test2'],
+      authorIds: [456],
     });
 
-    expect(root).not.toHaveClassName('AddonsByAuthorsCard');
-    expect(root.html()).toBeNull();
+    expect(root).toHaveClassName('AddonsByAuthorsCard');
+    expect(root).toHaveProp('loading', true);
   });
 
   it('should render a card with loading state if loading', () => {
@@ -267,7 +266,7 @@ describe(__filename, () => {
     store.dispatch(
       fetchAddonsByAuthors({
         addonType: ADDON_TYPE_EXTENSION,
-        authorIds: ['test2'],
+        authorIds: [456],
         errorHandlerId: errorHandler.id,
         pageSize: EXTENSIONS_BY_AUTHORS_PAGE_SIZE,
       }),
@@ -275,7 +274,7 @@ describe(__filename, () => {
 
     const root = render({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
       errorHandler,
       store,
     });
@@ -295,7 +294,7 @@ describe(__filename, () => {
 
     render({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
       errorHandler,
       numberOfAddons,
       store,
@@ -305,7 +304,7 @@ describe(__filename, () => {
       dispatchSpy,
       fetchAddonsByAuthors({
         addonType: ADDON_TYPE_EXTENSION,
-        authorIds: ['test2'],
+        authorIds: [456],
         errorHandlerId: errorHandler.id,
         pageSize: numberOfAddons,
       }),
@@ -320,7 +319,7 @@ describe(__filename, () => {
 
     const root = render({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
       errorHandler,
       numberOfAddons,
       store,
@@ -349,14 +348,14 @@ describe(__filename, () => {
 
     root.setProps({
       addonType: ADDON_TYPE_THEME,
-      authorIds: ['test2'],
+      authorIds: [456],
     });
 
     sinon.assert.calledWith(
       dispatchSpy,
       fetchAddonsByAuthors({
         addonType: ADDON_TYPE_THEME,
-        authorIds: ['test2'],
+        authorIds: [456],
         errorHandlerId: errorHandler.id,
         pageSize: numberOfAddons,
       }),
@@ -371,7 +370,7 @@ describe(__filename, () => {
 
     const root = render({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
       errorHandler,
       numberOfAddons,
       store,
@@ -381,14 +380,14 @@ describe(__filename, () => {
 
     root.setProps({
       addonType: ADDON_TYPE_OPENSEARCH,
-      authorIds: ['test2'],
+      authorIds: [456],
     });
 
     sinon.assert.calledWith(
       dispatchSpy,
       fetchAddonsByAuthors({
         addonType: ADDON_TYPE_OPENSEARCH,
-        authorIds: ['test2'],
+        authorIds: [456],
         errorHandlerId: errorHandler.id,
         pageSize: numberOfAddons,
       }),
@@ -403,7 +402,7 @@ describe(__filename, () => {
 
     const root = render({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
       errorHandler,
       numberOfAddons,
       store,
@@ -419,7 +418,7 @@ describe(__filename, () => {
       dispatchSpy,
       fetchAddonsByAuthors({
         addonType: ADDON_TYPE_EXTENSION,
-        authorIds: ['test2'],
+        authorIds: [456],
         errorHandlerId: errorHandler.id,
         forAddonSlug: 'testing',
         pageSize: numberOfAddons,
@@ -434,7 +433,7 @@ describe(__filename, () => {
 
     const root = render({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
       errorHandler,
       store,
     });
@@ -443,7 +442,7 @@ describe(__filename, () => {
 
     root.setProps({
       addonType: ADDON_TYPE_EXTENSION,
-      authorIds: ['test2'],
+      authorIds: [456],
     });
 
     sinon.assert.notCalled(dispatchSpy);
@@ -906,7 +905,7 @@ describe(__filename, () => {
       const dispatchSpy = sinon.spy(store, 'dispatch');
       const errorHandler = createStubErrorHandler();
 
-      const authorIds = ['test2'];
+      const authorIds = [456];
       const numberOfAddons = 4;
 
       renderWithPagination({
@@ -935,7 +934,7 @@ describe(__filename, () => {
       const dispatchSpy = sinon.spy(store, 'dispatch');
       const errorHandler = createStubErrorHandler();
 
-      const authorIds = ['test2'];
+      const authorIds = [456];
       const numberOfAddons = 4;
       const location = createFakeLocation({ query: { page: '1' } });
 
